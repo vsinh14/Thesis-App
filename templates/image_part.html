@@ -1,0 +1,8 @@
+<div id="image-container">
+    {% for image in image_metadata %}
+        <img src="{{ url_for('static', filename='images/generated_images/' + image) }}" alt="Generated Image">
+    {% else %}
+        <p>No images available.</p>
+    {% endfor %}
+</div>
+

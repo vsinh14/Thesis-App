@@ -16,9 +16,7 @@ class database:
             CREATE TABLE IF NOT EXISTS image_table (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 image_name TEXT,
-                caption TEXT,
                 tag TEXT,
-                description TEXT,
                 timestamp INTEGER
             )
         ''')
@@ -26,14 +24,14 @@ class database:
         conn.close()
 
     @staticmethod
-    def db_insert(image, caption, tags, description, timestamp):
+    def db_insert(image, tags, timestamp):
         """Inserts image metadata into the database."""
         database.db_create()  # Ensure table exists
         conn = sqlite3.connect(database.path())
         cursor = conn.cursor()
         timestamp = int(time.time())
-        sql = 'INSERT INTO image_table (image_name, caption, tag, description, timestamp) VALUES (?, ?, ?, ?, ?)'
-        cursor.execute(sql, (image, caption, tags, description, timestamp))
+        sql = 'INSERT INTO image_table (image_name,  tag,  timestamp) VALUES (?, ?, ?)'
+        cursor.execute(sql, (image, tags, timestamp))
         conn.commit()
         conn.close()
 
@@ -49,4 +47,27 @@ class database:
         records = cursor.fetchall()
         conn.close()
         return records  # Returns a list of tag strings
+
+    @staticmethod
+    def db_select_all():
+        """Fetches all image metadata from the database."""
+        database.db_create()  # Ensure table exists
+        conn = sqlite3.connect(database.path())
+        cursor = conn.cursor()
+        cursor.execute("SELECT image_name,  tag FROM image_table")
+        records = cursor.fetchall()
+        conn.close()
+        return records  # Returns a list of tuples containing image data
+
+    @staticmethod
+    def db_select_tags(image_name):
+        """Fetches the tags for a specific image by its filename."""
+        conn = sqlite3.connect(database.path())
+        cursor = conn.cursor()
+        cursor.execute("SELECT tag FROM image_table WHERE image_name = ?", (image_name,))
+        tags = cursor.fetchall()
+        conn.close()
+        # Return a list of tags
+        print(tags)
+        return [tag[0] for tag in tags]  # Fetches tags as a list of strings
 

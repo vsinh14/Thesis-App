@@ -1,23 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-  <meta name="theme-color" content="#000000">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Gallery</title>
+    <style>
+        /* Container for the gallery */
+        .gallery-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        /* Horizontal scroll container */
+        .gallery {
+            display: flex;
+            gap: 20px;  /* Space between images */
+            overflow-x: auto;  /* Enable horizontal scrolling */
+            scroll-behavior: smooth;  /* Smooth scrolling effect */
+            padding: 20px;  /* Padding inside the gallery */
+            margin: 0;
+        }
+
+        .image-item {
+            text-align: center;
+            flex-shrink: 0;  /* Prevent shrinking */
+            width: 100%;  /* Set image container to fill the width */
+        }
+
+        .image-item img {
+            width: 100%;  /* Adjust the image to fit the container */
+            height: auto;
+            border-radius: 8px;  /* Optional: Rounded corners for images */
+        }
+
+        .tags {
+            margin-top: 10px;
+        }
+
+        .tags li {
+            display: inline-block;
+            background-color: #f0f0f0;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin: 5px;
+        }
+
+        /* Button styling */
+        .btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
-    {% if latest_image %}
-        <img src="{{ url_for('static', filename='images/generated_images/' + latest_image) }}" alt="Latest Image" width="500">
-    {% else %}
-        <p>No images found.</p>
-    {% endif %}
+    <h1>Recent Images Gallery</h1>
+
+    <!-- Container for displaying one image at a time -->
+    <div class="gallery-container">
+        <div class="gallery">
+            {% for item in images_with_tags %}
+            <div class="image-item">
+                <img src="{{ url_for('static', filename='images/generated_images/' + item.image) }}" alt="Generated Image">
+                <div class="tags">
+                    <h3>Tags:</h3>
+                    <ul>
+                        {% for tag in item.tags %}
+                        <li>{{ tag }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <button class="btn" id="next-button">Next Image</button>
+    </div>
+
+    <script>
+        let images = {{ images_with_tags|tojson }};  // Flask passes the images list to JavaScript
+        let currentIndex = 0;
+
+        // Function to update the image and its tags
+        function showNextImage() {
+            currentIndex = (currentIndex + 1) % images.length;
+
+            // Update image
+            let imgElement = document.querySelector(".image-item img");
+            imgElement.src = "/static/images/generated_images/" + images[currentIndex].image;
+
+            // Update tags
+            let tagsList = document.querySelector(".tags ul");
+            tagsList.innerHTML = "";  // Clear existing tags
+            images[currentIndex].tags.forEach(tag => {
+                let li = document.createElement("li");
+                li.textContent = tag;
+                tagsList.appendChild(li);
+            });
+        }
+
+        // Set up button to change image on click
+        document.getElementById("next-button").addEventListener("click", showNextImage);
+
+        // Automatically change image every 3 seconds
+        setInterval(showNextImage, 3000);  // Change image every 3000ms (3 seconds)
+    </script>
 </body>
 </html>
-<script>
-window.setTimeout(function () {
-  window.location.reload();
-}, 7500);
-</script>
-
 
