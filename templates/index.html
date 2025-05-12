@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <meta name="theme-color" content="#000000">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    {% if latest_image %}
+        <img src="{{ url_for('static', filename='images/generated_images/' + latest_image) }}" alt="Latest Image" width="500">
+    {% else %}
+        <p>No images found.</p>
+    {% endif %}
+</body>
+</html>
+<script>
+window.setTimeout(function () {
+  window.location.reload();
+}, 7500);
+</script>
+
+
