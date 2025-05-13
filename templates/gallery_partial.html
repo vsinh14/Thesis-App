@@ -1,0 +1,9 @@
+<div class="image-item">
+    <img id="image-display" src="{{ url_for('static', filename='images/generated_images/' + images_with_tags[0].image) }}" alt="Generated Image">
+</div>
+
+<!-- Next Image Button (using HTMX for dynamic image changes) -->
+<div class="btn-container">
+    <button class="btn" hx-get="/get_recent_images" hx-target="#gallery" hx-swap="outerHTML">Next Image</button>
+</div>
+

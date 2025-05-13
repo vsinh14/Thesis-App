@@ -6,6 +6,7 @@ from flask import Flask, render_template, jsonify, request
 from werkzeug.utils import secure_filename
 import glob
 from database import database  # Assuming Database class for inserting metadata and querying it
+from flask import jsonify
 import wget
 from PIL import Image  # To simulate image generation (you can replace this with actual image generation logic)
 
@@ -16,6 +17,28 @@ IMAGE_FOLDER = "static/images/generated_images"
 os.makedirs(IMAGE_FOLDER, exist_ok=True)
 api_key = "sk-EJ5WHbYPpXuEpqqX3DOWzUDobxAT3Z6fYfUQHM87_DT3BlbkFJOMIbnG9h61jLZF1Ju3DCauH3oeUhl1LqPKaGHgZq4A"
 client = OpenAI(api_key=api_key)
+
+# Function to retrieve the most recent generated images based on modification time
+def get_recent_generated_images(num_images=3):
+    # Get the list of image files in the generated_images folder
+    image_files = [f for f in os.listdir(IMAGE_FOLDER) if os.path.isfile(os.path.join(IMAGE_FOLDER, f))]
+    
+    # Sort images by modification time (newest first)
+    image_files.sort(key=lambda f: os.path.getmtime(os.path.join(IMAGE_FOLDER, f)), reverse=True)
+    
+    # Limit the number of images to the most recent ones
+    recent_images = image_files[:num_images]
+    
+    # Here, you can either extract tags from a predefined list or retrieve them from the database
+    # For simplicity, we'll generate random tags or fetch them from previously uploaded images
+    images_with_tags = []
+    for image in recent_images:
+        # For now, assume tags are dummy or fetched from uploaded images
+        # You can replace this with actual tag extraction logic based on your app's logic
+        tags = "Generated image based on uploaded content"  # Replace with actual tag fetching logic
+        images_with_tags.append({'image': image, 'tags': tags})
+    
+    return images_with_tags
 
 # Function to check if uploads are enabled by reading 'enabled.txt'
 def is_upload_enabled():
@@ -47,17 +70,15 @@ def generate_images(tags, num_images=3):
         generated_images.append(img)  # Append dummy image
     return generated_images
 
+@app.route('/get_recent_images')
+def get_recent_images():
+    images_with_tags = get_recent_generated_images(num_images=3)  # Fetch recent images
+    return render_template('gallery_partial.html', images_with_tags=images_with_tags)
+
 @app.route('/')
 def home():
-    latest_images = get_latest_images()  # Get the top 3 latest images
-
-    # Fetch tags for each image from the database
-    images_with_tags = []
-    for image in latest_images:
-        tags = database.db_select_tags(image)  # Fetch tags for the image
-        images_with_tags.append({'image': image, 'tags': tags})
-    
-    return render_template('index.html', images_with_tags=images_with_tags)
+    latest_images = get_recent_generated_images()  # Get the top 3 latest images
+    return render_template('index.html', images_with_tags=latest_images)
 
 @app.route('/start_timer', methods=['POST'])
 def start_timer():

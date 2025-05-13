@@ -116,7 +116,7 @@
 
         // Timer Variables
         let timer;
-        let timerTime = 25;  // 2 minutes in seconds (120 seconds)
+        let timerTime = 30;  // 25 minutes in seconds (1500 seconds)
         let timerRunning = false;
 
         // Start Timer Button functionality
@@ -143,6 +143,11 @@
 
                     alert("Time's up!");  // Show an alert when time is up
                     timerRunning = false;
+
+                    // Refresh page 20 seconds after the timer ends
+                    setTimeout(function() {
+                        location.reload();  // Reload the page
+                    }, 60000);  // 20 seconds (20000 milliseconds)
                 } else {
                     timerTime--;
                 }
