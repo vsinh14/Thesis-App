@@ -1,6 +1,8 @@
 import base64
 import io
 import openai
+import requests
+import wget
 from PIL import Image
 
 # OpenAI API Key (use environment variable for security)
@@ -38,7 +40,7 @@ def resize_and_compress_image(image_path, max_width=800):
 
     # Compress the image and save it to a BytesIO object (JPEG format for compression)
     img_byte_array = io.BytesIO()
-    img.save(img_byte_array, format="JPEG", quality=25)  # Adjust quality for better compression
+    img.save(img_byte_array, format="JPEG", quality=85)  # Adjust quality for better compression
 
     # Convert the image to base64
     img_byte_array.seek(0)
@@ -50,7 +52,7 @@ def resize_and_compress_image(image_path, max_width=800):
 def image_process(image_path):
     # Prepare the image query for OpenAI API
     queries = [
-        "Provide 10 tags for this image in CSV format.",
+        "Provide 10 tags that describe this image in CSV format.",
     ]
     
     # Encode the image to base64 (if needed for processing)
@@ -58,20 +60,40 @@ def image_process(image_path):
     
     metadata = []
     for query in queries:
-        # Prepare the message and prompt for OpenAI
-        prompt = f"{query}\nImage: {compressed_base64_image}"
+    # Getting the base64 string
 
-        # Construct the payload for the OpenAI API
-        payload = {
-            "model": "gpt-4o-mini",  
-            "prompt": prompt,  # 'prompt' should be a string, not a list of dicts
-            "max_tokens": MAX_TOKENS# Optional: Set the maximum tokens for the response
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}"
         }
 
-        # Correct way to call OpenAI's API for completions
+        payload = {
+            "model": "gpt-4o-mini",
+            "messages": [
+            {
+                "role": "user",
+                "content": [
+                {
+                    "type": "text",
+                    "text": query
+                },
+                {
+                    "type": "image_url",
+                    "image_url": {
+                    "url": f"data:image/jpeg;base64,{compressed_base64_image}"
+                    }
+                }
+                ]
+            }
+            ],
+            "max_tokens": 300
+        }
         try:
-            response = openai.Completion.create(**payload)  # Use the correct method for completions
-            metadata.append(response['choices'][0]['text'].strip())  # Get the response text
+            response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+            response = response.json()
+            response = response['choices'][0]['message']['content']
+            metadata.append(response)
+            #metadata.append(response['choices'][0]['text'].strip())  # Get the response text
         except Exception as e:
             print(f"Error generating image data: {e}")
 
@@ -79,6 +101,7 @@ def image_process(image_path):
     if len(metadata) == 0:
         print("Error: No metadata generated.")
         return []
+    print(metadata)
     return metadata
 
 # Encode the image into base64

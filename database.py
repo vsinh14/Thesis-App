@@ -36,12 +36,12 @@ class database:
         conn.close()
 
     @staticmethod
-    def db_select_recent(days=3):
+    def db_select_recent(delay):
         """Fetches tags from images uploaded in the last X days."""
         database.db_create()  # Ensure table exists
         conn = sqlite3.connect(database.path())
         cursor = conn.cursor()
-        time_threshold = int(time.time()) - (57 + days)
+        time_threshold = int(time.time()) - delay 
         #time_threshold = int(time.time()) - (days * 86400)
         cursor.execute("SELECT tag FROM image_table WHERE timestamp > ?", (time_threshold,))
         records = cursor.fetchall()
@@ -62,6 +62,7 @@ class database:
     @staticmethod
     def db_select_tags(image_name):
         """Fetches the tags for a specific image by its filename."""
+        database.db_create()  # Ensure table exists
         conn = sqlite3.connect(database.path())
         cursor = conn.cursor()
         cursor.execute("SELECT tag FROM image_table WHERE image_name = ?", (image_name,))

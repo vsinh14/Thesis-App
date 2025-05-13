@@ -3,109 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Gallery</title>
     <style>
-        /* Container for the gallery */
-        .gallery-container {
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-            text-align: center;
-        }
-
-        /* Horizontal scroll container */
-        .gallery {
-            display: flex;
-            gap: 20px;  /* Space between images */
-            overflow-x: auto;  /* Enable horizontal scrolling */
-            scroll-behavior: smooth;  /* Smooth scrolling effect */
-            padding: 20px;  /* Padding inside the gallery */
+        /* General Body Styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #333;  /* Darker background */
             margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
         }
 
+        /* Main Container for the Gallery */
+        .gallery-container {
+            width: 90%;
+            max-width: 800px;
+            background-color: #444;  /* Darker background for gallery container */
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        /* Gallery Display (One image at a time) */
         .image-item {
             text-align: center;
-            flex-shrink: 0;  /* Prevent shrinking */
-            width: 100%;  /* Set image container to fill the width */
         }
 
         .image-item img {
-            width: 100%;  /* Adjust the image to fit the container */
+            width: 100%;  /* Image fills the width of the container */
+            max-width: 600px;  /* Limit maximum image width */
             height: auto;
-            border-radius: 8px;  /* Optional: Rounded corners for images */
+            border-radius: 8px;
+            margin-bottom: 20px;  /* Space below the image */
         }
 
-        .tags {
-            margin-top: 10px;
-        }
-
-        .tags li {
-            display: inline-block;
-            background-color: #f0f0f0;
-            padding: 5px 10px;
-            border-radius: 5px;
-            margin: 5px;
-        }
-
-        /* Button styling */
+        /* Button Styling */
         .btn {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #4CAF50;
+            padding: 12px 24px;
+            background-color: #555;  /* Darker button color */
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
         }
 
         .btn:hover {
-            background-color: #45a049;
+            background-color: #666;  /* Slightly lighter shade on hover */
         }
+
+        /* Center the button */
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        /* Timer Display */
+        .timer {
+            font-size: 18px;
+            color: #fff;
+            text-align: center;
+            margin-top: 20px;
+        }
+
     </style>
 </head>
 <body>
-    <h1>Recent Images Gallery</h1>
-
-    <!-- Container for displaying one image at a time -->
+    <!-- Gallery Container for One Image at a Time -->
     <div class="gallery-container">
-        <div class="gallery">
-            {% for item in images_with_tags %}
-            <div class="image-item">
-                <img src="{{ url_for('static', filename='images/generated_images/' + item.image) }}" alt="Generated Image">
-                <div class="tags">
-                    <h3>Tags:</h3>
-                    <ul>
-                        {% for tag in item.tags %}
-                        <li>{{ tag }}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-            {% endfor %}
+        <div class="image-item">
+            <img id="image-display" src="{{ url_for('static', filename='images/generated_images/' + images_with_tags[0].image) }}" alt="Generated Image">
         </div>
-        <button class="btn" id="next-button">Next Image</button>
+
+        <!-- Next Image Button -->
+        <div class="btn-container">
+            <button class="btn" id="next-button">Next Image</button>
+        </div>
+
+        <!-- Timer Button -->
+        <div class="btn-container">
+            <button class="btn" id="start-timer-button">Start Timer</button>
+        </div>
+
+        <!-- Timer Display -->
+        <div class="timer" id="timer-display">Timer: 00:00</div>
     </div>
 
     <script>
         let images = {{ images_with_tags|tojson }};  // Flask passes the images list to JavaScript
         let currentIndex = 0;
 
-        // Function to update the image and its tags
+        // Function to update the image displayed
         function showNextImage() {
             currentIndex = (currentIndex + 1) % images.length;
 
-            // Update image
-            let imgElement = document.querySelector(".image-item img");
-            imgElement.src = "/static/images/generated_images/" + images[currentIndex].image;
-
-            // Update tags
-            let tagsList = document.querySelector(".tags ul");
-            tagsList.innerHTML = "";  // Clear existing tags
-            images[currentIndex].tags.forEach(tag => {
-                let li = document.createElement("li");
-                li.textContent = tag;
-                tagsList.appendChild(li);
-            });
+            // Update the image source
+            document.getElementById("image-display").src = "/static/images/generated_images/" + images[currentIndex].image;
         }
 
         // Set up button to change image on click
@@ -113,6 +113,41 @@
 
         // Automatically change image every 3 seconds
         setInterval(showNextImage, 3000);  // Change image every 3000ms (3 seconds)
+
+        // Timer Variables
+        let timer;
+        let timerTime = 25;  // 2 minutes in seconds (120 seconds)
+        let timerRunning = false;
+
+        // Start Timer Button functionality
+        document.getElementById("start-timer-button").addEventListener("click", function() {
+            if (timerRunning) return;  // Prevent multiple timers running at the same time
+
+            // Start the timer
+            timerRunning = true;
+
+            // Write 'enabled' to the file via Flask
+            fetch('/start_timer', { method: 'POST' });
+
+            timer = setInterval(function() {
+                let minutes = Math.floor(timerTime / 60);
+                let seconds = timerTime % 60;
+                document.getElementById("timer-display").textContent = "Timer: " + 
+                    (minutes < 10 ? "0" + minutes : minutes) + ":" + 
+                    (seconds < 10 ? "0" + seconds : seconds);
+
+                if (timerTime === 0) {
+                    clearInterval(timer);
+                    // Write 'disabled' to the file via Flask
+                    fetch('/stop_timer', { method: 'POST' });
+
+                    alert("Time's up!");  // Show an alert when time is up
+                    timerRunning = false;
+                } else {
+                    timerTime--;
+                }
+            }, 1000);  // Update every second
+        });
     </script>
 </body>
 </html>
