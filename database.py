@@ -20,6 +20,25 @@ class database:
                 timestamp INTEGER
             )
         ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS generated_images (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                filename TEXT NOT NULL,
+                tags TEXT,
+                timestamp INTEGER
+            )
+        ''')
+        conn.commit()
+        conn.close()
+
+    @staticmethod
+    def insert_generated_image(filename, tags):
+        database.db_create()
+        conn = sqlite3.connect(database.path())
+        cursor = conn.cursor()
+        timestamp = int(time.time())
+        sql = 'INSERT INTO generated_images (fileName,  tags,  timestamp) VALUES (?, ?, ?)'
+        cursor.execute(sql, (filename, tags, timestamp))
         conn.commit()
         conn.close()
 

@@ -100,8 +100,8 @@ def stop_timer():
 
 def generate_new_images():
     """Generate new images using tags from the recently uploaded images."""
-    # Get images uploaded in the last 2 minutes (120 seconds)
-    recent_images = database.db_select_recent(120)
+    # Get images uploaded in the last 300 seconds
+    recent_images = database.db_select_recent(300)
     if not recent_images:
         print("No recent images found to generate new ones.")
         return
@@ -120,7 +120,6 @@ def generate_new_images():
     print("3 new images generated successfully!")
 
 def makeImage(tags, num_images=3):
-    print(tags)
     directoryList = os.listdir(IMAGE_FOLDER)
     counter = 0
     for i in directoryList:
@@ -137,6 +136,7 @@ def makeImage(tags, num_images=3):
             n=1,
         )
         wget.download(response.data[0].url,IMAGE_FOLDER + "/" + fileName)
+        database.insert_generated_image(fileName, tags)
         counter += 1
 
 if __name__ == '__main__':
