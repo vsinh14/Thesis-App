@@ -111,12 +111,12 @@
         // Set up button to change image on click
         document.getElementById("next-button").addEventListener("click", showNextImage);
 
-        // Automatically change image every 3 seconds
-        setInterval(showNextImage, 3000);  // Change image every 3000ms (3 seconds)
+        // Automatically change image every 8 seconds
+        setInterval(showNextImage, 8000);  // Change image every 3000ms (3 seconds)
 
         // Timer Variables
         let timer;
-        let timerTime = 30;  // 25 minutes in seconds (1500 seconds)
+        let timerTime = 180; //means 5 minutes  
         let timerRunning = false;
 
         // Start Timer Button functionality

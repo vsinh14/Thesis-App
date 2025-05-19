@@ -101,7 +101,7 @@ def stop_timer():
 def generate_new_images():
     """Generate new images using tags from the recently uploaded images."""
     # Get images uploaded in the last 300 seconds
-    recent_images = database.db_select_recent(300)
+    recent_images = database.db_select_recent(180)
     if not recent_images:
         print("No recent images found to generate new ones.")
         return
