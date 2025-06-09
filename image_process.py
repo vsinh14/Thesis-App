@@ -6,7 +6,7 @@ import wget
 from PIL import Image
 
 # OpenAI API Key (use environment variable for security)
-api_key = "sk-EJ5WHbYPpXuEpqqX3DOWzUDobxAT3Z6fYfUQHM87_DT3BlbkFJOMIbnG9h61jLZF1Ju3DCauH3oeUhl1LqPKaGHgZq4A"
+api_key = ""
 openai.api_key = api_key 
 
 MAX_WIDTH = 800  # Maximum width in pixels
